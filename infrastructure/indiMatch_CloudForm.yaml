@@ -1,0 +1,168 @@
+Parameters:
+  InstanceType:
+    Type: String
+    Default: t2.medium
+    Description: Enter instance size. Default is t2.medium.
+  AMI:
+    Type: String
+    Default: ami-048f6ed62451373d9
+    Description: The Amazon Linux AMI to use.
+  KeyPair:
+    Type: String
+    Default: IndiMatch_SSH
+    Description: The key pair used to manage the instance.
+  MgmtNet:
+    Type: String
+    Default: 0.0.0.0/0
+    Description: The subnet allowed to connect via SSH.
+  ElasticIP:
+    Type: String
+    Default: 3.95.119.158
+    Description: The existing Elastic IP to use for this instance.
+  PrivateIP:
+    Type: String
+    Default: 10.0.1.1
+    Description: The Private IP to use for this instance.
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: IndiMatch_VPC
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: VPC
+      InternetGatewayId:
+        Ref: InternetGateway
+  Subnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-1a
+      VpcId:
+        Ref: VPC
+      CidrBlock: 10.0.0.0/16
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: IndiMatch_SN
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+        - Key: Name
+          Value: IndiMatch_RT
+  Route:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGateway
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+      RouteTableId:
+        Ref: RouteTable
+  SubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: RouteTable
+      SubnetId:
+        Ref: Subnet
+  InstanceSecurityGroupA:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "IndiMatch_SG_Mgmt"
+      GroupDescription: "Inbound SSH management traffic"
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp:
+            Ref: MgmtNet
+      Tags:
+      - Key: Name
+        Value: IndiMatch_SG_Mgmt
+  InstanceSecurityGroupB:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "IndiMatch_SG_Web"
+      GroupDescription: "Inbound web application traffic"
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp:  0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+          CidrIp:  0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: IndiMatch_SG_Web
+  InstanceSecurityGroupC:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "IndiMatch_SG_Out"
+      GroupDescription: "Outbound IP traffic"
+      VpcId:
+        Ref: VPC
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp:  0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: IndiMatch_SG_Out
+  ElasticIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      InstanceId:
+        Ref: EC2Instance
+      EIP:
+        Ref: ElasticIP
+  NetworkInterface:
+    Type:  'AWS::EC2::NetworkInterface'
+    Properties:
+      PrivateIpAddress:
+        Ref: PrivateIP
+      SubnetId:
+        Ref: Subnet
+      GroupSet:
+        - Ref: InstanceSecurityGroupA
+        - Ref: InstanceSecurityGroupB
+        - Ref: InstanceSecurityGroupC
+  EC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      ImageId:
+        Ref: AMI
+      InstanceType:
+        Ref: InstanceType
+      KeyName:
+        Ref: KeyPair
+      NetworkInterfaces:
+        - NetworkInterfaceId: !Ref NetworkInterface
+          DeviceIndex: 0
+      Tags:
+        - Key: Name
+          Value:  IndiMatch_EC2_Server
+Outputs:
+  PublicIp:
+    Value:
+      Fn::GetAtt:
+        - EC2Instance
+        - PublicIp
+    Description: Return the server instance ID and public IP
