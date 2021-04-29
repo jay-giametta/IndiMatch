@@ -78,7 +78,7 @@ Resources:
         Ref: RouteTable
       SubnetId:
         Ref: Subnet
-  InstanceSecurityGroupA:
+  SecurityGroupMgmt:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: "IndiMatch_SG_Mgmt"
@@ -94,7 +94,7 @@ Resources:
       Tags:
       - Key: Name
         Value: IndiMatch_SG_Mgmt
-  InstanceSecurityGroupB:
+  SecurityGroupWeb:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: "IndiMatch_SG_Web"
@@ -113,7 +113,7 @@ Resources:
       Tags:
       - Key: Name
         Value: IndiMatch_SG_Web
-  InstanceSecurityGroupC:
+  SecurityGroupOut:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: "IndiMatch_SG_Out"
@@ -141,9 +141,9 @@ Resources:
       SubnetId:
         Ref: Subnet
       GroupSet:
-        - Ref: InstanceSecurityGroupA
-        - Ref: InstanceSecurityGroupB
-        - Ref: InstanceSecurityGroupC
+        - Ref: SecurityGroupMgmt
+        - Ref: SecurityGroupWeb
+        - Ref: SecurityGroupOut
   EC2Instance:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -154,7 +154,8 @@ Resources:
       KeyName:
         Ref: KeyPair
       NetworkInterfaces:
-        - NetworkInterfaceId: !Ref NetworkInterface
+        - NetworkInterfaceId:
+            Ref: NetworkInterface
           DeviceIndex: 0
       Tags:
         - Key: Name
