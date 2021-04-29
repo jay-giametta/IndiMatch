@@ -17,7 +17,7 @@ Parameters:
     Description: The subnet allowed to connect via SSH.
   ElasticIP:
     Type: String
-    Default: 3.95.119.158
+    Default: 18.211.94.203
     Description: The existing Elastic IP to use for this instance.
   PrivateIP:
     Type: String
@@ -161,9 +161,6 @@ Resources:
         - Key: Name
           Value:  IndiMatch_EC2_Server
 Outputs:
-  PublicIp:
+  EC2InstanceARN:
     Value:
-      Fn::GetAtt:
-        - EC2Instance
-        - PublicIp
-    Description: Return the server instance ID and public IP
+      Ref: EC2Instance
