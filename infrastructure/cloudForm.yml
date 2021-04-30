@@ -4,7 +4,7 @@ Parameters:
     Default: t2.medium
     Description: Enter instance size. Default is t2.medium.
   AMI:
-    Type: String
+    Type: AWS::EC2::Image::Id
     Default: ami-048f6ed62451373d9
     Description: The Amazon Linux AMI to use.
   KeyPair:
@@ -23,6 +23,14 @@ Parameters:
     Type: String
     Default: 10.0.1.1
     Description: The Private IP to use for this instance.
+  AvailabilityZoneId:
+    Type: String
+    Default: us-east-1a
+    Description: The availability zone that the stack will run in.
+  Environment:
+    Type: String
+    Default: Test
+    Description: Is this a Test or Live environment?
 Resources:
   VPC:
     Type: AWS::EC2::VPC
@@ -33,113 +41,98 @@ Resources:
       InstanceTenancy: default
       Tags:
         - Key: Name
-          Value: IndiMatch_VPC
+          Value: !Sub IndiMatch_${Environment}_VPC
   InternetGateway:
     Type: AWS::EC2::InternetGateway
   VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
-      VpcId:
-        Ref: VPC
-      InternetGatewayId:
-        Ref: InternetGateway
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
   Subnet:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: us-east-1a
-      VpcId:
-        Ref: VPC
+      AvailabilityZone: !Ref AvailabilityZoneId
+      VpcId: !Ref VPC
       CidrBlock: 10.0.0.0/16
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: IndiMatch_SN
+          Value: !Sub IndiMatch_${Environment}_SN
   RouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId:
-        Ref: VPC
+      VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: IndiMatch_RT
+          Value: !Sub IndiMatch_${Environment}_RT
   Route:
     Type: AWS::EC2::Route
-    DependsOn: InternetGateway
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
-      GatewayId:
-        Ref: InternetGateway
-      RouteTableId:
-        Ref: RouteTable
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref RouteTable
   SubnetRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId:
-        Ref: RouteTable
-      SubnetId:
-        Ref: Subnet
+      RouteTableId: !Ref RouteTable
+      SubnetId: !Ref Subnet
   SecurityGroupMgmt:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: "IndiMatch_SG_Mgmt"
-      GroupDescription: "Inbound SSH management traffic"
-      VpcId:
-        Ref: VPC
+      GroupName: !Sub IndiMatch_${Environment}_SG_Mgmt
+      GroupDescription: 'Inbound SSH management traffic'
+      VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: '22'
-          ToPort: '22'
-          CidrIp:
-            Ref: MgmtNet
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref MgmtNet
+        - IpProtocol: '-1'
+          CidrIp:  10.0.0.0/16
       Tags:
       - Key: Name
-        Value: IndiMatch_SG_Mgmt
+        Value: !Sub IndiMatch_${Environment}_SG_Mgmt
   SecurityGroupWeb:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: "IndiMatch_SG_Web"
-      GroupDescription: "Inbound web application traffic"
-      VpcId:
-        Ref: VPC
+      GroupName: !Sub IndiMatch_${Environment}_SG_Web
+      GroupDescription: 'Inbound web application traffic'
+      VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: '80'
-          ToPort: '80'
+          FromPort: 80
+          ToPort: 80
           CidrIp:  0.0.0.0/0
         - IpProtocol: tcp
-          FromPort: '443'
-          ToPort: '443'
+          FromPort: 443
+          ToPort: 443
           CidrIp:  0.0.0.0/0
       Tags:
       - Key: Name
-        Value: IndiMatch_SG_Web
+        Value: !Sub IndiMatch_${Environment}_SG_Web
   SecurityGroupOut:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: "IndiMatch_SG_Out"
-      GroupDescription: "Outbound IP traffic"
-      VpcId:
-        Ref: VPC
+      GroupName: !Sub IndiMatch_${Environment}_SG_Out
+      GroupDescription: 'Outbound IP traffic'
+      VpcId: !Ref VPC
       SecurityGroupEgress:
-        - IpProtocol: -1
+        - IpProtocol: '-1'
           CidrIp:  0.0.0.0/0
       Tags:
       - Key: Name
-        Value: IndiMatch_SG_Out
+        Value: !Sub IndiMatch_${Environment}_SG_Out
   ElasticIPAssociation:
     Type: AWS::EC2::EIPAssociation
     Properties:
-      InstanceId:
-        Ref: EC2Instance
-      EIP:
-        Ref: ElasticIP
+      InstanceId: !Ref EC2Instance
+      EIP: !Ref ElasticIP
   NetworkInterface:
     Type:  'AWS::EC2::NetworkInterface'
     Properties:
-      PrivateIpAddress:
-        Ref: PrivateIP
-      SubnetId:
-        Ref: Subnet
+      PrivateIpAddress: !Ref PrivateIP
+      SubnetId: !Ref Subnet
       GroupSet:
         - Ref: SecurityGroupMgmt
         - Ref: SecurityGroupWeb
@@ -147,20 +140,15 @@ Resources:
   EC2Instance:
     Type: 'AWS::EC2::Instance'
     Properties:
-      ImageId:
-        Ref: AMI
-      InstanceType:
-        Ref: InstanceType
-      KeyName:
-        Ref: KeyPair
+      ImageId: !Ref AMI
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyPair
       NetworkInterfaces:
-        - NetworkInterfaceId:
-            Ref: NetworkInterface
-          DeviceIndex: 0
+        - NetworkInterfaceId: !Ref NetworkInterface
+          DeviceIndex: '0'
       Tags:
         - Key: Name
-          Value:  IndiMatch_EC2_Server
+          Value:  !Sub IndiMatch_${Environment}_EC2_Server
 Outputs:
   EC2InstanceARN:
-    Value:
-      Ref: EC2Instance
+    Value: !Ref EC2Instance

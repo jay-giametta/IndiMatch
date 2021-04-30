@@ -1,0 +1,23 @@
+version: 0.2
+env:
+  git-credential-helper: yes
+phases:
+  install:
+    runtime-versions:
+      python: 3.7
+    commands:
+      - echo Install phase started on `date`
+  build:
+    commands:
+      - echo Build phase started on `date`
+      - git clone https://git-codecommit.us-east-1.amazonaws.com/v1/repos/IndiMatch
+      - cd IndiMatch
+      - git checkout main
+      - git merge origin/stage
+      - git push
+  post_build:
+    commands:
+      - echo Build completed on `date`
+artifacts:
+  files:
+    - '**/*'

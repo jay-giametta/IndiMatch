@@ -1,0 +1,7 @@
+project:
+  name: indimatch
+  regions:
+    - us-east-1
+tests:
+  indiMatch-test:
+    template: ./cloudForm.yml
