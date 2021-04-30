@@ -81,7 +81,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Sub IndiMatch_${Environment}_SG_Mgmt
-      GroupDescription: 'Inbound SSH management traffic'
+      GroupDescription: 'Inbound  management traffic'
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
