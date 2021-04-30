@@ -11,10 +11,6 @@ Parameters:
     Type: String
     Default: IndiMatch_SSH
     Description: The key pair used to manage the instance.
-  MgmtNet:
-    Type: String
-    Default: 0.0.0.0/0
-    Description: The subnet allowed to connect via SSH.
   ElasticIP:
     Type: String
     Default: 18.211.94.203
@@ -84,10 +80,6 @@ Resources:
       GroupDescription: 'Inbound  management traffic'
       VpcId: !Ref VPC
       SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: !Ref MgmtNet
         - IpProtocol: '-1'
           CidrIp:  10.0.0.0/16
       Tags:
