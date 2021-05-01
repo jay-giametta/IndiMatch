@@ -2,7 +2,11 @@ Parameters:
   InstanceType:
     Type: String
     Default: t2.medium
-    Description: Enter instance size. Default is t2.medium.
+    Description: Enter instance size.
+  InstanceProfile:
+    Type: String
+    Default: myManagedInstanceRoleforSSM
+    Description: Enter the instance IAM role/profile.
   AMI:
     Type: AWS::EC2::Image::Id
     Default: ami-048f6ed62451373d9
@@ -118,7 +122,7 @@ Resources:
   ElasticIPAssociation:
     Type: AWS::EC2::EIPAssociation
     Properties:
-      InstanceId: !Ref EC2Instance
+      InstanceId: !Ref Instance
       EIP: !Ref ElasticIP
   NetworkInterface:
     Type:  'AWS::EC2::NetworkInterface'
@@ -129,10 +133,11 @@ Resources:
         - Ref: SecurityGroupMgmt
         - Ref: SecurityGroupWeb
         - Ref: SecurityGroupOut
-  EC2Instance:
+  Instance:
     Type: 'AWS::EC2::Instance'
     Properties:
       ImageId: !Ref AMI
+      IamInstanceProfile: !Ref InstanceProfile
       InstanceType: !Ref InstanceType
       KeyName: !Ref KeyPair
       NetworkInterfaces:
@@ -142,5 +147,5 @@ Resources:
         - Key: Name
           Value:  !Sub IndiMatch_${Environment}_EC2_Server
 Outputs:
-  EC2InstanceARN:
-    Value: !Ref EC2Instance
+  InstanceARN:
+    Value: !Ref Instance

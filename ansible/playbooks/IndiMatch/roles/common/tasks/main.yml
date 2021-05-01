@@ -1,0 +1,25 @@
+---
+# This playbook contains common plays that will be run on all nodes.
+- name: Set hostname
+  hostname:
+    name: "{{ hostname }}"
+
+- name: Create personal user
+  user:
+    name: "{{ username }}"
+    groups: adm, wheel
+    state: present
+
+- name: Set authorized key for personal user
+  authorized_key:
+    user: "{{ username }}"
+    key: "{{lookup('file', '../files/indimatch.pub')}}"
+    state: present
+    
+- name: Set empty password for personal user
+  command: passwd -d "{{ username }}"
+  
+- name: Update system packages
+  yum:
+    name: '*'
+    state: latest
