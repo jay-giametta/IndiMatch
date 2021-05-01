@@ -7,3 +7,19 @@
   become_method: sudo
   roles:
     - common
+
+- name: Apply docker configuration to all nodes
+  hosts: all
+  remote_user: ec2-user
+  become: yes
+  become_method: sudo
+  roles:
+    - docker
+    
+- name: Apply kubernetes configuration to all nodes
+  hosts: all
+  remote_user: ec2-user
+  become: yes
+  become_method: sudo
+  roles:
+    - kubernetes

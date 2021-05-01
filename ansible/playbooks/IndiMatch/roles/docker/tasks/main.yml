@@ -1,0 +1,23 @@
+---
+# Actions that will be run on docker nodes.
+- name: Install docker
+  command: yum install -y docker
+  tags: docker
+
+- name: Add local user to the docker group
+  command: usermod -a -G docker "{{ username }}"
+  tags: docker
+
+- name: Create docker daemon config
+  copy:
+    src: ../files/daemon.json
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: '0644'
+  tags: docker
+
+- name: Enable docker
+  command: systemctl enable --now docker
+  tags: docker
+  

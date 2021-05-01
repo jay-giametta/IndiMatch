@@ -1,0 +1,73 @@
+---
+# Actions that will be run on kubernetes nodes.
+- name: Install tc to system path
+  command: yum install -y tc
+  tags: kubernetes
+  
+- name: Copy repo file
+  copy:
+    src: ../files/kubernetes.repo
+    dest: /etc/yum.repos.d/kubernetes.repo
+    owner: root
+    group: root
+    mode: '0644'
+  tags: kubernetes
+  
+- name: Create kubernetes module config
+  copy:
+    src: ../files/k8s-module.conf
+    dest: /etc/modules-load.d/k8s.conf
+    owner: root
+    group: root
+    mode: '0644'
+  tags: kubernetes
+  
+- name: Create kubernetes sysctl config
+  copy:
+    src: ../files/k8s-sysctl.conf
+    dest: /etc/sysctl.d/k8s.conf
+    owner: root
+    group: root
+    mode: '0644'
+  tags: kubernetes
+
+- name: Update kubernetes kernel requirements
+  command: sysctl --system
+  tags: kubernetes
+  
+- name: Install kubernetes
+  command: yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+  tags: kubernetes
+
+- name: Enable kubelet service
+  command: systemctl enable --now kubelet
+  tags: kubernetes
+  
+- name: Initialize control-plane node
+  command: kubeadm init --pod-network-cidr=192.168.0.0/16
+  ignore_errors: True
+  tags: kubernetes
+  
+- name: Allow kubectl from local user
+  command: "{{ item }}"
+  with_items:
+    - "mkdir -p ~/.kube"
+    - "mkdir -p /home/{{ username }}/.kube"
+    - "cp /etc/kubernetes/admin.conf /home/{{ username }}/.kube/config"
+    - "cp /etc/kubernetes/admin.conf ~/.kube/config"
+    - "chown {{ username }}:{{ username }} /home/{{ username }}/.kube/config"
+  tags: kubernetes
+  
+- name: Install Calico Tigera operator
+  command: kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml
+  ignore_errors: True
+  tags: kubernetes
+
+- name: Install Calico Pod network add-on
+  command: kubectl create -f https://docs.projectcalico.org/manifests/custom-resources.yaml
+  ignore_errors: True
+  tags: kubernetes
+  
+- name: Allow pods on control-plane node
+  command: kubectl taint nodes --all node-role.kubernetes.io/master-
+  tags: kubernetes

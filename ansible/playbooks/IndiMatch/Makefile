@@ -9,3 +9,9 @@ all:
 
 common:
 	ansible-playbook $(PLAYBOOK) -i $(INVENTORY) -t common
+	
+docker:
+	ansible-playbook $(PLAYBOOK) -i $(INVENTORY) -t docker
+	
+kubernetes:
+	ansible-playbook $(PLAYBOOK) -i $(INVENTORY) -t kubernetes
