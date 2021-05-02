@@ -1,0 +1,147 @@
+---
+pipeline:
+  roleArn: arn:aws:iam::052960531311:role/service-role/pipeline-IndiMatch
+  stages:
+  - name: Source
+    actions:
+    - inputArtifacts: []
+      name: Source
+      region: us-east-1
+      namespace: SourceVariables
+      actionTypeId:
+        category: Source
+        owner: AWS
+        version: '1'
+        provider: CodeCommit
+      outputArtifacts:
+      - name: SourceArtifact
+      configuration:
+        OutputArtifactFormat: CODE_ZIP
+        PollForSourceChanges: 'false'
+        BranchName: stage
+        RepositoryName: IndiMatch
+      runOrder: 1
+  - name: Build
+    actions:
+    - inputArtifacts:
+      - name: SourceArtifact
+      name: Build
+      region: us-east-1
+      namespace: BuildVariables
+      actionTypeId:
+        category: Build
+        owner: AWS
+        version: '1'
+        provider: CodeBuild
+      outputArtifacts:
+      - name: BuildArtifact
+      configuration:
+        ProjectName: IndiMatch
+      runOrder: 1
+  - name: Deploy-Test
+    actions:
+    - inputArtifacts:
+      - name: SourceArtifact
+      name: TestCloudFormation
+      region: us-east-1
+      actionTypeId:
+        category: Deploy
+        owner: AWS
+        version: '1'
+        provider: CloudFormation
+      outputArtifacts:
+      - name: TestCloudFormation
+      configuration:
+        StackName: IndiMatch-Test
+        ActionMode: CREATE_UPDATE
+        RoleArn: arn:aws:iam::052960531311:role/AWS-QuickSetup-StackSet-Local-AdministrationRole
+        TemplatePath: SourceArtifact::infrastructure/cloudForm.yml
+      runOrder: 1
+    - inputArtifacts:
+      - name: SourceArtifact
+      name: SourceToS3Test
+      region: us-east-1
+      actionTypeId:
+        category: Deploy
+        owner: AWS
+        version: '1'
+        provider: S3
+      outputArtifacts: []
+      configuration:
+        Extract: 'true'
+        BucketName: indimatchsrctest
+      runOrder: 1
+  - name: Approve-Test
+    actions:
+    - inputArtifacts: []
+      name: ManualApprove
+      region: us-east-1
+      actionTypeId:
+        category: Approval
+        owner: AWS
+        version: '1'
+        provider: Manual
+      outputArtifacts: []
+      configuration:
+        CustomData: Push the test build to production?
+      runOrder: 1
+  - name: Merge-Main
+    actions:
+    - inputArtifacts:
+      - name: SourceArtifact
+      name: MergeMain
+      region: us-east-1
+      actionTypeId:
+        category: Build
+        owner: AWS
+        version: '1'
+        provider: CodeBuild
+      outputArtifacts:
+      - name: MergeMain
+      configuration:
+        ProjectName: IndiMatch-Merge
+      runOrder: 1
+  - name: Deploy-Live
+    actions:
+    - inputArtifacts:
+      - name: SourceArtifact
+      name: LiveCloudFormation
+      region: us-east-1
+      actionTypeId:
+        category: Deploy
+        owner: AWS
+        version: '1'
+        provider: CloudFormation
+      outputArtifacts:
+      - name: LiveCloudFormation
+      configuration:
+        StackName: IndiMatch-Live
+        ActionMode: CREATE_UPDATE
+        RoleArn: arn:aws:iam::052960531311:role/AWS-QuickSetup-StackSet-Local-AdministrationRole
+        ParameterOverrides: '{ "Environment": "Live", "ElasticIP": "3.95.119.158"
+          }'
+        TemplatePath: SourceArtifact::infrastructure/cloudForm.yml
+      runOrder: 1
+    - inputArtifacts:
+      - name: SourceArtifact
+      name: SourceToS3Live
+      region: us-east-1
+      actionTypeId:
+        category: Deploy
+        owner: AWS
+        version: '1'
+        provider: S3
+      outputArtifacts: []
+      configuration:
+        Extract: 'true'
+        BucketName: indimatchsrclive
+      runOrder: 1
+  artifactStore:
+    type: S3
+    location: indimatchartifacts
+  name: IndiMatch
+  version: 11
+metadata:
+  pipelineArn: arn:aws:codepipeline:us-east-1:052960531311:IndiMatch
+  updated: 1619828338.802
+  created: 1619751752.971

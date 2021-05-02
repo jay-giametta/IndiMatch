@@ -1,0 +1,43 @@
+---
+projectsNotFound: []
+projects:
+- environment:
+    computeType: BUILD_GENERAL1_SMALL
+    imagePullCredentialsType: CODEBUILD
+    privilegedMode: false
+    image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+    environmentVariables: []
+    type: LINUX_CONTAINER
+  timeoutInMinutes: 60
+  name: IndiMatch-Merge
+  serviceRole: arn:aws:iam::052960531311:role/service-role/codebuild-IndiMatch-service-role
+  tags: []
+  artifacts:
+    type: NO_ARTIFACTS
+  lastModified: 1619792434.388
+  cache:
+    type: NO_CACHE
+  created: 1619792434.388
+  sourceVersion: refs/heads/stage
+  source:
+    buildspec: test/buildspec-merge.yml
+    insecureSsl: false
+    gitSubmodulesConfig:
+      fetchSubmodules: false
+    location: https://git-codecommit.us-east-1.amazonaws.com/v1/repos/IndiMatch
+    gitCloneDepth: 1
+    type: CODECOMMIT
+  badge:
+    badgeEnabled: false
+  queuedTimeoutInMinutes: 480
+  secondaryArtifacts: []
+  logsConfig:
+    s3Logs:
+      status: DISABLED
+      encryptionDisabled: false
+    cloudWatchLogs:
+      status: ENABLED
+  secondarySources: []
+  encryptionKey: arn:aws:kms:us-east-1:052960531311:alias/aws/s3
+  arn: arn:aws:codebuild:us-east-1:052960531311:project/IndiMatch-Merge
+  secondarySourceVersions: []
