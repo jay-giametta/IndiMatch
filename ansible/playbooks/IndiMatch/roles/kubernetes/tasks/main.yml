@@ -10,7 +10,6 @@
     dest: /etc/yum.repos.d/kubernetes.repo
     owner: root
     group: root
-    mode: '0644'
   tags: kubernetes
   
 - name: Create kubernetes module config
@@ -19,7 +18,6 @@
     dest: /etc/modules-load.d/k8s.conf
     owner: root
     group: root
-    mode: '0644'
   tags: kubernetes
   
 - name: Create kubernetes sysctl config
@@ -28,7 +26,6 @@
     dest: /etc/sysctl.d/k8s.conf
     owner: root
     group: root
-    mode: '0644'
   tags: kubernetes
 
 - name: Update kubernetes kernel requirements
@@ -70,4 +67,5 @@
   
 - name: Allow pods on control-plane node
   command: kubectl taint nodes --all node-role.kubernetes.io/master-
+  ignore_errors: True
   tags: kubernetes

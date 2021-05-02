@@ -1,0 +1,55 @@
+---
+# Actions that will be run on apache nodes.
+- name: Download apache docker container
+  command: docker pull httpd
+  tags: apache
+  
+- name: Creates apache www directory
+  file:
+    path: /opt/apache/www
+    state: directory
+    owner: root
+    group: root
+    recurse: yes
+  tags: apache
+  
+- name: Copies webpages to www
+  copy:
+    src: ../files/www/
+    dest: /opt/apache/www/
+    owner: root
+    group: root
+  tags: apache
+  
+- name: Creates apache config directory
+  file:
+    path: /opt/ansible/apache
+    state: directory
+    owner: root
+    group: root
+    recurse: yes
+  tags: apache
+  
+- name: Copy apache deployment configs
+  copy:
+    src: ../files/apache-kube.yml
+    dest: /opt/ansible/apache/apache-kube.yml
+    owner: root
+    group: root
+  tags: apache
+
+- name: Copy apache service configs
+  copy:
+    src: ../files/apache-service.yml
+    dest: /opt/ansible/apache/apache-service.yml
+    owner: root
+    group: root
+  tags: apache
+  
+- name: Create apache deployment and config
+  command: "kubectl apply -f {{ item }}"
+  with_items:
+    - "/opt/ansible/apache/apache-kube.yml"
+    - "/opt/ansible/apache/apache-service.yml"
+  tags: apache
+  

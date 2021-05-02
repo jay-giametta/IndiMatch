@@ -23,3 +23,11 @@
   become_method: sudo
   roles:
     - kubernetes
+    
+- name: Create apache pod
+  hosts: all
+  remote_user: ec2-user
+  become: yes
+  become_method: sudo
+  roles:
+    - apache

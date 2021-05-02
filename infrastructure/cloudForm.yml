@@ -82,7 +82,7 @@ Resources:
     Properties: 
       DomainName: indilocal.net
       DomainNameServers: 
-        - 10.0.0.2
+        - AmazonProvidedDNS
       Tags: 
         - Key: Name
           Value: !Sub IndiMatch_${Environment}_DHCP

@@ -15,3 +15,6 @@ docker:
 	
 kubernetes:
 	ansible-playbook $(PLAYBOOK) -i $(INVENTORY) -t kubernetes
+		
+apache:
+	ansible-playbook $(PLAYBOOK) -i $(INVENTORY) -t apache
