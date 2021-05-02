@@ -15,7 +15,7 @@
  11. *CodeBuild* merges the 'stage' branch into the 'main' branch in *CodeCommit*.
  12.  *CodePipeline* sends the verified code to *CloudFormation* and *S3*.
  13. *CloudFormation* builds a Live*EC2* stack using the infrastructure code in this repo.
- 14. S3* hosts the Ansible playbooks along with the rest of the verified source code in a Live bucket.
+ 14. *S3* hosts the Ansible playbooks along with the rest of the verified source code in a Live bucket.
  15. *Systems Manager* baselines the state of the Live *EC2* instance using the Ansible playbooks hosted in *S3* Live bucket.
 
 **Other Capabilities**:
