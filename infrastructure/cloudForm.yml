@@ -77,6 +77,20 @@ Resources:
     Properties:
       RouteTableId: !Ref RouteTable
       SubnetId: !Ref Subnet
+  DHCPOptions:
+    Type: AWS::EC2::DHCPOptions
+    Properties: 
+      DomainName: indilocal.net
+      DomainNameServers: 
+        - 10.0.0.2
+      Tags: 
+        - Key: Name
+          Value: !Sub IndiMatch_${Environment}_DHCP
+  DHCPOptionsAssociation:
+    Type: AWS::EC2::VPCDHCPOptionsAssociation
+    Properties:
+      VpcId: !Ref VPC
+      DhcpOptionsId: !Ref DHCPOptions
   SecurityGroupMgmt:
     Type: AWS::EC2::SecurityGroup
     Properties:
