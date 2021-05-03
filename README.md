@@ -22,3 +22,6 @@
 Ansible - Deploy server capabilities to production state from baseline AMI  
 Docker - Will host webserver microservice capabilities (No web cape deployed yet)  
 Kubernetes - Orchestrates network/reliability capabilities for Docker microservices  
+Apache - Simple web front-end (for now)  
+*ELB* - Load balancers on test and live accept http traffic and forward it to the appropriate exposed kubernetes ports.  
+*Route53* - Route DNS traffic for test.indimatch.net and www.indimatch.net to DNS entries for the load balancers.  
