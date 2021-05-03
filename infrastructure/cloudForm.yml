@@ -15,10 +15,6 @@ Parameters:
     Type: String
     Default: IndiMatch_SSH
     Description: The key pair used to manage the instance.
-  ElasticIP:
-    Type: String
-    Default: 18.211.94.203
-    Description: The existing Elastic IP to use for this instance.
   PrivateIP:
     Type: String
     Default: 10.0.1.1
@@ -133,11 +129,6 @@ Resources:
       Tags:
       - Key: Name
         Value: !Sub IndiMatch_${Environment}_SG_Out
-  ElasticIPAssociation:
-    Type: AWS::EC2::EIPAssociation
-    Properties:
-      InstanceId: !Ref Instance
-      EIP: !Ref ElasticIP
   NetworkInterface:
     Type:  'AWS::EC2::NetworkInterface'
     Properties:
