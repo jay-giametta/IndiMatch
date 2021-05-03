@@ -47,7 +47,7 @@
   tags: apache
   
 - name: Create apache deployment and config
-  command: "kubectl apply -f {{ item }}"
+  shell: "kubectl apply -f {{ item }}"
   with_items:
     - "/opt/ansible/apache/apache-kube.yml"
     - "/opt/ansible/apache/apache-service.yml"

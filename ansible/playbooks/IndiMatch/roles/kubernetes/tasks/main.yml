@@ -4,6 +4,22 @@
   command: yum install -y tc
   tags: kubernetes
   
+- name: Copy environment file
+  copy:
+    src: ../files/environment
+    dest: /etc/environment
+    owner: root
+    group: root
+  tags: kubernetes
+
+- name: Make kubernetes configs readable
+  file: path=/etc/kubernetes owner=root group=root mode=0755 state=directory recurse=yes
+  tags: kubernetes
+  
+- name: Export environment file
+  shell: export KUBECONFIG=/etc/kubernetes/admin.conf
+  tags: kubernetes
+  
 - name: Copy repo file
   copy:
     src: ../files/kubernetes.repo
@@ -11,7 +27,7 @@
     owner: root
     group: root
   tags: kubernetes
-  
+
 - name: Create kubernetes module config
   copy:
     src: ../files/k8s-module.conf
@@ -56,16 +72,16 @@
   tags: kubernetes
   
 - name: Install Calico Tigera operator
-  command: kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml
+  shell: kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml
   ignore_errors: True
   tags: kubernetes
 
 - name: Install Calico Pod network add-on
-  command: kubectl create -f https://docs.projectcalico.org/manifests/custom-resources.yaml
+  shell: kubectl create -f https://docs.projectcalico.org/manifests/custom-resources.yaml
   ignore_errors: True
   tags: kubernetes
   
 - name: Allow pods on control-plane node
-  command: kubectl taint nodes --all node-role.kubernetes.io/master-
+  shell: kubectl taint nodes --all node-role.kubernetes.io/master-
   ignore_errors: True
   tags: kubernetes
